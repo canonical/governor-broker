@@ -1,0 +1,2 @@
+juju
+git+https://github.com/DomFleischmann/governor.git
