@@ -79,7 +79,7 @@ async def events_to_storage(model, event_list):
         )
 
         gs.close()
-    except sqlite3.OperationalError as e:
+    except sqlite3.OperationalError:
         logging.warning("Waiting for DB to unlock")
 
     return event_list
@@ -99,7 +99,7 @@ async def execute_action(model, application_name, action_name, **kwargs):
 
 
 async def govern_model(
-    endpoint: str, username: str, password: str, cacert: str, model_name: str
+    endpoint: str, username: str, password: str, cacert: str, model_name: str,
 ):
     _, model = await connect_juju_components(
         endpoint, username, password, cacert, model_name
@@ -109,16 +109,19 @@ async def govern_model(
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--file")
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-f", "--file")
+    # parser.add_argument("-d", "--dir")
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
-    with open(args.file, "r") as stream:
+    with open("/usr/share/broker/creds.yaml", "r") as stream:
         creds = yaml.safe_load(stream)
 
     open("/usr/share/broker/broker.log", "w")
-    logging.basicConfig(filename="/usr/share/broker/broker.log")
+    # logging.basicConfig(filename="/usr/share/broker/broker.log")
+
+    logging.warning("Hello")
 
     loop.run(
         govern_model(

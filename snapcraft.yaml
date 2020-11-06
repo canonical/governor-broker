@@ -1,0 +1,24 @@
+name: governor-broker
+version: git
+summary: Broker Daemon for Governor Charms
+description: |
+  Broker Daemon for Governor Charms
+base: core20
+confinement: classic
+grade: stable
+
+apps:
+  governor-broker:
+    command: bin/python3 $SNAP/bin/broker
+    daemon: simple
+    restart-condition: always
+
+parts:
+  governor-broker:
+    plugin: python
+    source: .
+    requirements:
+      - ./requirements.txt
+    python-packages:
+      - wheel
+      - setuptools
