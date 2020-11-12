@@ -6,12 +6,15 @@ import time
 import logging
 import yaml
 import sqlite3
+import os
 from governor.storage import GovernorStorage
 
 from juju.controller import Controller
 from juju.client import client
 from juju import loop
 
+
+snap_common = os.getenv("SNAP_COMMON")
 
 async def connect_juju_components(
     endpoint: str, username: str, password: str, cacert: str, model_name: str
@@ -68,7 +71,7 @@ async def unit_watcher(model, entity_type):
 
 async def events_to_storage(model, event_list):
     try:
-        gs = GovernorStorage("/usr/share/broker/gs_db")
+        gs = GovernorStorage("{}/gs_db".format(snap_common))
 
         for i in range(len(event_list)):
             gs.write_event_data(event_list[0])
@@ -109,19 +112,15 @@ async def govern_model(
 
 
 def main():
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("-f", "--file")
-    # parser.add_argument("-d", "--dir")
 
-    # args = parser.parse_args()
-
-    with open("/usr/share/broker/creds.yaml", "r") as stream:
+    logging.warning("snap_common: {}".format(snap_common))
+    with open("{}/creds.yaml".format(snap_common), "r") as stream:
         creds = yaml.safe_load(stream)
 
-    open("/usr/share/broker/broker.log", "w")
+    open("{}/broker.log".format(snap_common), "w")
     # logging.basicConfig(filename="/usr/share/broker/broker.log")
 
-    logging.warning("Hello")
+    logging.warning("creds: {}".format(creds))
 
     loop.run(
         govern_model(
