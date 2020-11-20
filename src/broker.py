@@ -29,7 +29,7 @@ async def connect_juju_components(
     return ctrl, model
 
 
-async def unit_watcher(model, entity_type):
+async def unit_watcher(model, entity_type, governor_charm):
     allwatcher = client.AllWatcherFacade.from_connection(model.connection())
 
     change = await allwatcher.Next()
@@ -67,9 +67,9 @@ async def unit_watcher(model, entity_type):
                     logging.warning("Action executed")
 
             if event_list:
-                event_list = await events_to_storage(model, event_list)
+                event_list = await events_to_storage(model, event_list, governor_charm)
 
-async def events_to_storage(model, event_list):
+async def events_to_storage(model, event_list, governor_charm):
     try:
         gs = GovernorStorage("{}/gs_db".format(snap_common))
 
@@ -78,7 +78,7 @@ async def events_to_storage(model, event_list):
             event_list.pop(0)
 
         await execute_action(
-            model, "ubuntu-governor", "governorevent"
+            model, governor_charm, "governorevent"
         )
 
         gs.close()
@@ -102,13 +102,13 @@ async def execute_action(model, application_name, action_name, **kwargs):
 
 
 async def govern_model(
-    endpoint: str, username: str, password: str, cacert: str, model_name: str,
+    endpoint: str, username: str, password: str, cacert: str, model_name: str, governor_charm: str
 ):
     _, model = await connect_juju_components(
         endpoint, username, password, cacert, model_name
     )
 
-    await unit_watcher(model, "unit")
+    await unit_watcher(model, "unit", governor_charm)
 
 
 def main():
@@ -129,6 +129,7 @@ def main():
             creds["password"],
             creds["cacert"],
             creds["model"],
+            creds["governor-charm"],
         )
     )
 
