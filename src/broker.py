@@ -50,7 +50,7 @@ async def unit_watcher(model, entity_type, governor_charm):
                     logging.warning("New unit was added")
 
                     event_data = {
-                        "event_name": "unitadded",
+                        "event_name": "unit_added",
                         "event_data": {"unit_name": delta.data["name"]},
                     }
 
@@ -60,7 +60,7 @@ async def unit_watcher(model, entity_type, governor_charm):
                 if delta.type == "remove":
                     logging.warning("Unit was removed")
                     event_data = {
-                        "event_name": "unitremoved",
+                        "event_name": "unit_removed",
                         "event_data": {"unit_name": delta.data["name"]},
                     }
                     event_list.append(event_data)
@@ -78,7 +78,7 @@ async def events_to_storage(model, event_list, governor_charm):
             event_list.pop(0)
 
         await execute_action(
-            model, governor_charm, "governorevent"
+            model, governor_charm, "governor-event"
         )
 
         gs.close()
