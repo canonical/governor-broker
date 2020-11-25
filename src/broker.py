@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
 
-import argparse
-import queue
 import time
 import logging
 import yaml
@@ -16,9 +14,9 @@ from juju import loop
 
 snap_common = os.getenv("SNAP_COMMON")
 
-async def connect_juju_components(
-    endpoint: str, username: str, password: str, cacert: str, model_name: str
-):
+
+async def connect_juju_components(endpoint, username, password, cacert, model_name):
+    """ Connect to controller and model """
     ctrl = Controller()
     await ctrl.connect(
         endpoint=endpoint, username=username, password=password, cacert=cacert
@@ -30,6 +28,7 @@ async def connect_juju_components(
 
 
 async def unit_watcher(model, entity_type, governor_charm):
+    """ Watch all changes in units """
     allwatcher = client.AllWatcherFacade.from_connection(model.connection())
 
     change = await allwatcher.Next()
@@ -69,7 +68,11 @@ async def unit_watcher(model, entity_type, governor_charm):
             if event_list:
                 event_list = await events_to_storage(model, event_list, governor_charm)
 
+
 async def events_to_storage(model, event_list, governor_charm):
+    """
+    Store events to Governor Storage if unlocked and wake up governor charm with action.
+    """
     try:
         gs = GovernorStorage("{}/gs_db".format(snap_common))
 
@@ -77,9 +80,7 @@ async def events_to_storage(model, event_list, governor_charm):
             gs.write_event_data(event_list[0])
             event_list.pop(0)
 
-        await execute_action(
-            model, governor_charm, "governor-event"
-        )
+        await execute_action(model, governor_charm, "governor-event")
 
         gs.close()
     except sqlite3.OperationalError:
@@ -89,6 +90,7 @@ async def events_to_storage(model, event_list, governor_charm):
 
 
 async def execute_action(model, application_name, action_name, **kwargs):
+    """ Execute action on leader unit of application. """
     if not model.applications and application_name not in model.applications:
         return
 
@@ -102,8 +104,14 @@ async def execute_action(model, application_name, action_name, **kwargs):
 
 
 async def govern_model(
-    endpoint: str, username: str, password: str, cacert: str, model_name: str, governor_charm: str
+    endpoint,
+    username,
+    password,
+    cacert,
+    model_name,
+    governor_charm,
 ):
+    """ Connect to juju components and call watchers. """
     _, model = await connect_juju_components(
         endpoint, username, password, cacert, model_name
     )
@@ -112,15 +120,9 @@ async def govern_model(
 
 
 def main():
-
-    logging.warning("snap_common: {}".format(snap_common))
+    """ Read credentials and call Govern Model. """
     with open("{}/creds.yaml".format(snap_common), "r") as stream:
         creds = yaml.safe_load(stream)
-
-    open("{}/broker.log".format(snap_common), "w")
-    # logging.basicConfig(filename="/usr/share/broker/broker.log")
-
-    logging.warning("creds: {}".format(creds))
 
     loop.run(
         govern_model(
