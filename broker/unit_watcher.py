@@ -8,6 +8,7 @@ from juju.client import client
 
 
 class UnitWatcher:
+    """ Class in charge of watching changes in units """
     def __init__(self, model, governor_charm, storage_path):
         self.model = model
         self.storage_path = storage_path
@@ -23,6 +24,7 @@ class UnitWatcher:
         }
 
     def get_active_units(self):
+        """ Method which will return a set of all currently active units """
         active_units = set()
 
         for app_name, app in self.model.applications.items():
@@ -35,11 +37,13 @@ class UnitWatcher:
         return active_units
 
     def status_active(self, delta):
+        """ Method reacting to units passing to active state """
         if delta.data["name"] not in self.active_units:
             logging.warning("New active unit {}".format(delta.data["name"]))
             self.active_units.add(delta.data["name"])
 
     def status_blocked(self, delta):
+        """ Method reacting to units passing to blocked state """
         logging.warning("Unit blocked {}".format(delta.data["name"]))
         was_active = delta.data["name"] in self.active_units
         if was_active:
@@ -57,6 +61,7 @@ class UnitWatcher:
         self.event_list.append(event_data)
 
     def status_error(self, delta):
+        """ Method reacting to units passing to error state """  
         logging.warning("Unit error {}".format(delta.data["name"]))
         was_active = delta.data["name"] in self.active_units
         if was_active:
@@ -74,7 +79,7 @@ class UnitWatcher:
         self.event_list.append(event_data)
 
     async def start_watcher(self):
-        """ Watch all changes in units """
+        """  Start and Watch changes in Units """
         allwatcher = client.AllWatcherFacade.from_connection(self.model.connection())
 
         change = await allwatcher.Next()
@@ -122,7 +127,8 @@ class UnitWatcher:
 
     async def events_to_storage(self):
         """
-        Store events to Governor Storage if unlocked and wake up governor charm with action.
+        Store events to Governor Storage if unlocked and wake up governor charm with
+        action.
         """
         try:
             gs = GovernorStorage("{}/gs_db".format(self.storage_path))

@@ -21,6 +21,7 @@ async def connect_juju_components(endpoint, username, password, cacert, model_na
 
 
 def sync_unit_watcher(model, governor_charm, storage_path):
+    """ Instanciate UnitWatcher and start watcher """
     uw = UnitWatcher(model, governor_charm, storage_path)
     loop.run(uw.start_watcher())
 
