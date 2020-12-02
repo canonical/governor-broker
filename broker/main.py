@@ -24,6 +24,7 @@ def sync_unit_watcher(model, governor_charm, storage_path):
     uw = UnitWatcher(model, governor_charm, storage_path)
     loop.run(uw.start_watcher())
 
+
 def govern_model(
     endpoint,
     username,
@@ -34,9 +35,9 @@ def govern_model(
     storage_path,
 ):
     """ Connect to juju components and call watchers. """
-    _, model = loop.run(connect_juju_components(
-        endpoint, username, password, cacert, model_name
-    ))
+    _, model = loop.run(
+        connect_juju_components(endpoint, username, password, cacert, model_name)
+    )
 
     sync_unit_watcher(model, governor_charm, storage_path)
 

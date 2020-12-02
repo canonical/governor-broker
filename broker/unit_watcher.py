@@ -6,8 +6,8 @@ import sqlite3
 from governor.storage import GovernorStorage
 from juju.client import client
 
-class UnitWatcher:
 
+class UnitWatcher:
     def __init__(self, model, governor_charm, storage_path):
         self.model = model
         self.storage_path = storage_path
@@ -50,7 +50,7 @@ class UnitWatcher:
             "event_data": {
                 "unit_name": delta.data["name"],
                 "was_active": was_active,
-                "message": delta.deltas[2]["workload-status"]["message"]
+                "message": delta.deltas[2]["workload-status"]["message"],
             },
         }
 
@@ -67,7 +67,7 @@ class UnitWatcher:
             "event_data": {
                 "unit_name": delta.data["name"],
                 "was_active": was_active,
-                "message": delta.deltas[2]["workload-status"]["message"]
+                "message": delta.deltas[2]["workload-status"]["message"],
             },
         }
 
@@ -78,32 +78,34 @@ class UnitWatcher:
         allwatcher = client.AllWatcherFacade.from_connection(self.model.connection())
 
         change = await allwatcher.Next()
-    
+
         while True:
             units = self.model.units
             await asyncio.sleep(2)
             change = await allwatcher.Next()
             for delta in change.deltas:
                 delta_entity = delta.entity
-    
+
                 if delta_entity == "unit":
                     if self.governor in delta.data["name"]:
                         continue
 
-                    if delta.type == "change": 
+                    if delta.type == "change":
                         if delta.data["name"] not in units:
                             logging.warning("New unit was added")
-    
+
                             event_data = {
                                 "event_name": "unit_added",
                                 "event_data": {"unit_name": delta.data["name"]},
                             }
-    
+
                             self.event_list.append(event_data)
 
                         workload_status = delta.deltas[2]["workload-status"]["current"]
                         if workload_status in self.status_changes:
-                            status_change_function = self.status_changes[workload_status]
+                            status_change_function = self.status_changes[
+                                workload_status
+                            ]
                             status_change_function(delta)
 
                     if delta.type == "remove":
@@ -114,7 +116,7 @@ class UnitWatcher:
                         }
                         self.event_list.append(event_data)
                         logging.warning("Action executed")
-    
+
                 if self.event_list:
                     await self.events_to_storage()
 
@@ -124,13 +126,13 @@ class UnitWatcher:
         """
         try:
             gs = GovernorStorage("{}/gs_db".format(self.storage_path))
-    
+
             for i in range(len(self.event_list)):
                 gs.write_event_data(self.event_list[0])
                 self.event_list.pop(0)
-    
+
             await self.execute_action("governor-event")
-    
+
             gs.close()
         except sqlite3.OperationalError:
             logging.warning("Waiting for DB to unlock")
@@ -139,7 +141,7 @@ class UnitWatcher:
         """ Execute action on leader unit of application. """
         if not self.model.applications and self.governor not in self.model.applications:
             return
-    
+
         application = self.model.applications[self.governor]
 
         for u in application.units:
