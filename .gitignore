@@ -1,3 +1,5 @@
 *.snap
 .tox/
 *egg-info
+*__pycache__
+

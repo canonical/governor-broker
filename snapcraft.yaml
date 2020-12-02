@@ -9,7 +9,7 @@ confinement: strict
 
 apps:
   governor-broker:
-    command: bin/python3 $SNAP/bin/broker
+    command: bin/python3 $SNAP/bin/broker -p $SNAP_COMMON
     daemon: simple
     restart-condition: always
     plugs:
