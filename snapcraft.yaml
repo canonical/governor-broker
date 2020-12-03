@@ -24,3 +24,6 @@ parts:
     python-packages:
       - wheel
       - setuptools
+
+build-packages:
+  - libffi-dev
