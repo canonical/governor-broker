@@ -1,12 +1,12 @@
 from unittest.mock import patch, PropertyMock
 from unittest import TestCase
 from juju.model import Model
-from juju import loop
 from broker.unit_watcher import UnitWatcher
+
 
 class FakeApplication:
     def __init__(self, entity_id, active):
-        self.units = [FakeUnit(entity_id, active)]    
+        self.units = [FakeUnit(entity_id, active)]
 
 
 class FakeUnit:

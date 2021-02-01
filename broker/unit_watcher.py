@@ -1,5 +1,4 @@
 import logging
-import pprint
 import asyncio
 import sqlite3
 
@@ -61,7 +60,7 @@ class UnitWatcher:
         self.event_list.append(event_data)
 
     def status_error(self, delta):
-        """ Method reacting to units passing to error state """  
+        """ Method reacting to units passing to error state """
         logging.warning("Unit error {}".format(delta.data["name"]))
         was_active = delta.data["name"] in self.active_units
         if was_active:
