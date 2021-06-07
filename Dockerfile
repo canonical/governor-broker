@@ -7,7 +7,7 @@ WORKDIR /usr/share/broker
 COPY broker.py /usr/share/broker/
 COPY requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 CMD [ "python", "/usr/share/broker/broker.py", "-f", "/usr/share/broker/creds.yaml" ]
 
